@@ -11,116 +11,75 @@ The type of storage will not matter as any config needed will be inside the Conf
 this means that it should be possible to for example switch between saving to file and
 saving to a database relatively easily.
 
-Its also important that the persist function works both with a zero duration and a non-zero
-duration. If one is not implemented full compatibility between structs cannot be guaranteed.
-
 ### Example
 
 ```rust
-use std::fs::OpenOptions;
-use std::io::prelude::*;
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex, RwLock};
-#[derive(Debug, Default)]
-pub struct TextFile {
-    pub data: Arc<RwLock<String>>,
 
-    persisting: Arc<Mutex<bool>>,
-    pub config: Arc<RwLock<PathBuf>>,
-}
+    fn using_struct() {
+        let mut persistent_text = TextFile::new(PathBuf::from("test.json")); // Setup struct
+        load(&mut persistent_text);
 
-impl Persist for TextFile {
-    type Error = String;
+        persistent_text.data = "Hello World!".into(); // Change Data
+        persist(&persistent_text); // Persist
 
-    type Config = PathBuf;
+        // Do other work...
 
-    fn setup(config: Self::Config) -> Self {
-        let default = TextFile::default();
-        *default.config.write().unwrap() = config;
-        default
+        persistent_text.data = "Bye!".into();
+        persist(&persistent_text);
     }
 
-    fn persist(&self, time: std::time::Duration) -> Result<(), Self::Error> {
-        if *self.persisting.lock().unwrap() {
-            return Err("Struct is already persisting".to_string());
-        }
+    fn using_generic_struct() {
+        let path = PathBuf::from("generic.json");
 
-        let once = if time.is_zero() { true } else { false };
-        let path = self.config.read().unwrap().clone();
+        let mut persistent_text: JsonPreserve<String> = JsonPreserve::new("".into(), PathBuf::from("generic.json"));
+        load(&mut persistent_text);
 
-        loop {
-            let mut file = match OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .open(&path)
-            {
-                Ok(file) => file,
-                Err(e) => {
-                    return Err(e.to_string());
-                }
-            };
+        // Do other work...
 
-            match file.write(self.data.read().unwrap().as_bytes()) {
-                Ok(_) => {}
-                Err(e) => {
-                    return Err(e.to_string());
-                }
-            }
+        *persistent_text = "Bye!".into();
+        persist(&persistent_text);
+    }
 
-            if once {
-                break;
-            } else {
-                *self.persisting.lock().unwrap() = true;
-                std::thread::sleep(time);
+    fn load<T>(persist: &mut T)
+    where
+        T: Persist,
+    {
+        persist.load().unwrap();
+    }
+
+    fn persist<T>(persist: &T)
+    where
+        T: Persist,
+    {
+        persist.persist().unwrap();
+    }
+
+    #[derive(Debug)]
+    pub struct TextFile {
+        pub data: String,
+        config: PathBuf,
+    }
+
+    impl TextFile {
+        fn new(config: PathBuf) -> Self {
+            TextFile {
+                data: "".into(),
+                config,
             }
         }
-        Ok(())
     }
 
-    fn load(&self) -> Result<(), Self::Error> {
-        let mut buf = String::new();
-        let buf = match OpenOptions::new()
-            .read(true)
-            .open(self.config.read().unwrap().clone())
-        {
-            Ok(mut file) => match file.read_to_string(&mut buf) {
-                Ok(_) => buf,
-                Err(e) => log::warn!("{:?}", e),
-            },
-            Err(e) => return Err(e.to_string()),
-        };
-        *self.data.write().unwrap() = buf;
-        Ok(())
+    impl Persist for TextFile {
+        type Error = std::io::Error;
+
+        type Config = PathBuf;
+
+        fn persist(&self) -> Result<(), Self::Error> {
+            // Save to file
+        }
+
+        fn load(&mut self) -> Result<(), Self::Error> {
+            // Load from file
+        }
     }
-}
-
-fn main() {
-    let persistent_text = TextFile::setup(PathBuf::from("File.txt")); // Setup struct
-    let persistent = load_persistency(persistent_text);
-    persist_interval(persistent);
-
-    *persistent_text.data.write().unwrap() = "Hello World!".to_string(); // Change Data again, will persist winin 5 seconds
-
-    // Do other work...
-
-    let data = persistent.data.read().unwrap().clone(); // Use data
-
-    // Do other work
-}
-
-fn load_persistency<T>(persist: T) -> T
-where
-    T: Persist + ?std::marker::Sized,
-{
-    persist.load().unwrap();
-    persist
-}
-
-fn persist_interval<T>(persist: T)
-where
-    T: Persist + ?std::marker::Sized,
-{
-    persist.persist(std::time::Duration::from_secs(5)).unwrap(); // Persist Data every 5 seconds
-}
 ```

@@ -8,5 +8,5 @@ Cargo.lock
 *.tar
 *.tar.gz
 
-ZERO.json
-NON-ZERO.json
+generic.json
+test.json
