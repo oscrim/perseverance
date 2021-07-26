@@ -6,18 +6,18 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::Persist;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Default)]
 pub struct JsonPreserve<T>
 where
-    T: Serialize + DeserializeOwned,
+    T: Serialize + DeserializeOwned + Default + Clone,
 {
     pub data: T,
-    config: PathBuf,
+    pub config: PathBuf,
 }
 
 impl<T> JsonPreserve<T>
 where
-    T: Serialize + DeserializeOwned,
+    T: Serialize + DeserializeOwned + Default + Clone,
 {
     pub fn new(data: T, config: PathBuf) -> Self {
         JsonPreserve { data, config }
@@ -26,7 +26,7 @@ where
 
 impl<T> Persist for JsonPreserve<T>
 where
-    T: Serialize + DeserializeOwned,
+    T: Serialize + DeserializeOwned + Default + Clone,
 {
     type Error = io::Error;
 
@@ -75,7 +75,7 @@ where
 
 impl<T> Deref for JsonPreserve<T>
 where
-    T: Serialize + DeserializeOwned,
+    T: Serialize + DeserializeOwned + Default + Clone,
 {
     type Target = T;
 
@@ -86,7 +86,7 @@ where
 
 impl<T> DerefMut for JsonPreserve<T>
 where
-    T: Serialize + DeserializeOwned,
+    T: Serialize + DeserializeOwned + Default + Clone,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.data
