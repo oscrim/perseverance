@@ -34,15 +34,15 @@ mod tests {
 
         let mut persist2: JsonPreserve<String> = JsonPreserve::new("".into(), path.clone());
         load(&mut persist2);
-        assert_eq!(persist1, persist2);
+        assert_eq!(*persist1, *persist2);
 
         *persist1 = "Bye!".into();
         persist(&persist1);
 
         let mut persist3: JsonPreserve<String> = JsonPreserve::new("".into(), path.clone());
         load(&mut persist3);
-        assert_eq!(persist1, persist3);
-        assert_ne!(persist2, persist3);
+        assert_eq!(*persist1, *persist3);
+        assert_ne!(*persist2, *persist3);
     }
 
     #[test]
@@ -54,15 +54,15 @@ mod tests {
 
         let mut persist2 = TextFile::new(PathBuf::from("test.json")); // Setup struct
         load(&mut persist2);
-        assert_eq!(persist1, persist2);
+        assert_eq!(persist1.data, persist2.data);
 
         persist1.data = "Bye!".into();
         persist(&persist1);
 
         let mut persist3 = TextFile::new(PathBuf::from("test.json")); // Setup struct
         load(&mut persist3);
-        assert_eq!(persist1, persist3);
-        assert_ne!(persist2, persist3);
+        assert_eq!(persist1.data, persist3.data);
+        assert_ne!(persist2.data, persist3.data);
     }
 
     fn load<T>(persist: &mut T)
@@ -119,12 +119,4 @@ mod tests {
             Ok(())
         }
     }
-
-    impl std::cmp::PartialEq for TextFile {
-        fn eq(&self, other: &Self) -> bool {
-            self.data == other.data
-        }
-    }
-
-    impl Eq for TextFile {}
 }
