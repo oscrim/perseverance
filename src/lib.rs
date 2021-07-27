@@ -1,12 +1,15 @@
-pub mod structs;
+#[cfg(feature = "json")]
+pub mod types;
+#[cfg(feature = "json")]
+pub use types::JsonPersist;
 
 /// Used to persist a struct
 pub trait Persist: std::marker::Sized {
-    /// The error type thaat will be returned
-    type Error: std::fmt::Debug;
+    /// The error type that will be returned
+    type Error;
 
     /// The config that contains the information needed to persist the data
-    type Config: Clone;
+    type Config;
 
     /// Save the data and make it persist
     fn persist(&self) -> Result<(), Self::Error>;
@@ -17,29 +20,32 @@ pub trait Persist: std::marker::Sized {
 
 #[cfg(test)]
 mod tests {
+    use std::fmt::Debug;
     use std::fs::OpenOptions;
     use std::io::prelude::*;
     use std::path::PathBuf;
 
-    use crate::structs::JsonPreserve;
+    #[cfg(feature = "json")]
+    use crate::types::JsonPersist;
     use crate::Persist;
 
     #[test]
+    #[cfg(feature = "json")]
     fn generic_struct() {
         let path = PathBuf::from("generic.json");
 
-        let mut persist1: JsonPreserve<String> =
-            JsonPreserve::new("Hello World!".into(), path.clone());
+        let mut persist1: JsonPersist<String> =
+            JsonPersist::new("Hello World!".into(), path.clone());
         persist(&persist1);
 
-        let mut persist2: JsonPreserve<String> = JsonPreserve::new("".into(), path.clone());
+        let mut persist2: JsonPersist<String> = JsonPersist::new("".into(), path.clone());
         load(&mut persist2);
         assert_eq!(*persist1, *persist2);
 
         *persist1 = "Bye!".into();
         persist(&persist1);
 
-        let mut persist3: JsonPreserve<String> = JsonPreserve::new("".into(), path.clone());
+        let mut persist3: JsonPersist<String> = JsonPersist::new("".into(), path.clone());
         load(&mut persist3);
         assert_eq!(*persist1, *persist3);
         assert_ne!(*persist2, *persist3);
@@ -68,6 +74,7 @@ mod tests {
     fn load<T>(persist: &mut T)
     where
         T: Persist,
+        T::Error: Debug,
     {
         persist.load().unwrap();
     }
@@ -75,6 +82,7 @@ mod tests {
     fn persist<T>(persist: &T)
     where
         T: Persist,
+        T::Error: Debug,
     {
         persist.persist().unwrap();
     }

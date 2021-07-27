@@ -6,8 +6,9 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::Persist;
 
+/// Generic struct that implements Persist and is configured to save to file
 #[derive(Debug, Clone, Default)]
-pub struct JsonPreserve<T>
+pub struct JsonPersist<T>
 where
     T: Serialize + DeserializeOwned + Default + Clone,
 {
@@ -15,16 +16,16 @@ where
     pub config: PathBuf,
 }
 
-impl<T> JsonPreserve<T>
+impl<T> JsonPersist<T>
 where
     T: Serialize + DeserializeOwned + Default + Clone,
 {
     pub fn new(data: T, config: PathBuf) -> Self {
-        JsonPreserve { data, config }
+        JsonPersist { data, config }
     }
 }
 
-impl<T> Persist for JsonPreserve<T>
+impl<T> Persist for JsonPersist<T>
 where
     T: Serialize + DeserializeOwned + Default + Clone,
 {
@@ -73,7 +74,7 @@ where
     }
 }
 
-impl<T> Deref for JsonPreserve<T>
+impl<T> Deref for JsonPersist<T>
 where
     T: Serialize + DeserializeOwned + Default + Clone,
 {
@@ -84,7 +85,7 @@ where
     }
 }
 
-impl<T> DerefMut for JsonPreserve<T>
+impl<T> DerefMut for JsonPersist<T>
 where
     T: Serialize + DeserializeOwned + Default + Clone,
 {
