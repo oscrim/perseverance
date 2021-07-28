@@ -4,6 +4,8 @@ A rust library for simplifying the process of maintaining persistency between ru
 
 ## Usage
 
+To use the generic type that implements Persist use the feature *types*.
+
 Here is an example implementation for having simple persistency for a textfile that can,
 either be saved directly or on a set interval.
 

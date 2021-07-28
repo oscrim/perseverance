@@ -1,6 +1,6 @@
-#[cfg(feature = "json")]
+#[cfg(feature = "types")]
 pub mod types;
-#[cfg(feature = "json")]
+#[cfg(feature = "types")]
 pub use types::JsonPersist;
 
 /// Used to persist a struct
@@ -25,12 +25,12 @@ mod tests {
     use std::io::prelude::*;
     use std::path::PathBuf;
 
-    #[cfg(feature = "json")]
+    #[cfg(feature = "types")]
     use crate::types::JsonPersist;
     use crate::Persist;
 
     #[test]
-    #[cfg(feature = "json")]
+    #[cfg(feature = "types")]
     fn generic_struct() {
         let path = PathBuf::from("generic.json");
 
