@@ -33,7 +33,7 @@ saving to a database relatively easily.
     fn using_generic_struct() {
         let path = PathBuf::from("generic.json");
 
-        let mut persistent_text: JsonPreserve<String> = JsonPreserve::new("".into(), PathBuf::from("generic.json"));
+        let mut persistent_text: JsonPreserve<String> = JsonPreserve::new("".into(), path);
         load(&mut persistent_text);
 
         // Do other work...
