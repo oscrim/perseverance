@@ -10,3 +10,4 @@ Cargo.lock
 
 generic.json
 test.json
+test_async.json

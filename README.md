@@ -4,7 +4,11 @@ A rust library for simplifying the process of maintaining persistency between ru
 
 ## Usage
 
-To use the generic type that implements Persist use the feature *types*.
+To use the generic type that implements Persist use the feature **types**.
+
+To use perseverance in async the **async** feature can be used which will enable the
+PersistAsync trait, this will also enable the #[async_trait] macro which is re-exported
+from the [async_trait](https://crates.io/crates/async-trait) crate.
 
 Here is an example implementation for having simple persistency for a textfile that can,
 either be saved directly or on a set interval.
